@@ -39,7 +39,7 @@ pub mod token_splitter {
         Ok(())
     }
 
-   pub fn share_funds<'info>(ctx: Context<'_, '_, '_, 'info, ShareFunds<'info>>) -> Result<()> {
+   pub fn share_funds<'info>(ctx: Context<'_, '_,'info,'info, ShareFunds<'info>>) -> Result<()> {
        let vault_info = &mut ctx.accounts.vault_info;
     let vault_token_account = &ctx.accounts.vault_token_acc;
     let targets = ctx.remaining_accounts;
@@ -71,11 +71,11 @@ pub mod token_splitter {
         require!(target.owner == &anchor_spl::token::ID, CustomError::InvalidTokenAccount);
         require!(!target.data_is_empty(), CustomError::AccountNotInitialized);
         
-        let mut data_slice: &[u8] = &target.try_borrow_data()?;
-        let target_token_account = TokenAccount::try_deserialize(&mut data_slice)
-            .map_err(|_| CustomError::InvalidTokenAccount)?;
+  let target_account = Account::<TokenAccount>::try_from(target)
+        .map_err(|_| CustomError::InvalidTokenAccount)?;
+    
+    require!(target_account.mint == vault_info.mint, CustomError::InvalidMint);
         
-        require!(target_token_account.mint == vault_info.mint, CustomError::InvalidMint);
         
         // Transfer immediately after validation
         let cpi_accounts = Transfer {
@@ -151,7 +151,6 @@ pub fn close_vault(ctx: Context<CloseVault>)->Result<()>{
         let signer = &ctx.accounts.signer.key();
         let mint = &ctx.accounts.mint.key();
         require!(vault_info.owner == signer.key(), CustomError::Unauthorized);
-        require!(signer.key()==vault_token_acc.owner, CustomError::Unauthorized);
         require!(mint.key() == vault_token_acc.mint , CustomError::InvalidMint);
         require!(mint.key() == vault_info.mint.key(), CustomError::InvalidMint);
         require!(vault_token_acc.amount == 0, CustomError::VaultNotEmpty);
