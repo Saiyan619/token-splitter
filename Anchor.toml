@@ -12,7 +12,7 @@ token_splitter = "HgWKLR2a2TreZCaEJZhzC7pwuQdQaU5bTb7eYPJC7s9B"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
